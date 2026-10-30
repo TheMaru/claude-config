@@ -1,0 +1,90 @@
+{
+  "env": {
+    "ENABLE_TOOL_SEARCH": "true",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "opus"
+  },
+  "permissions": {
+    "deny": [
+      "Agent(pr-review-toolkit:code-simplifier)",
+      "CronCreate",
+      "CronDelete",
+      "CronList",
+      "EndConversation",
+      "EnterPlanMode",
+      "EnterWorktree",
+      "ExitPlanMode",
+      "ExitWorktree",
+      "Monitor",
+      "NotebookEdit",
+      "PushNotification"
+    ],
+    "defaultMode": "auto"
+  },
+  "model": "opus",
+  "worktree": {
+    "baseRef": "fresh"
+  },
+  "disableWorkflows": true,
+  "disableArtifact": true,
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline.sh"
+  },
+  "enabledPlugins": {
+    "feature-dev@claude-plugins-official": false,
+    "code-simplifier@claude-plugins-official": false,
+    "typescript-lsp@claude-plugins-official": false,
+    "pr-review-toolkit@claude-plugins-official": true,
+    "clangd-lsp@claude-plugins-official": false,
+    "atlassian@claude-plugins-official": true,
+    "security-guidance@claude-plugins-official": false,
+    "claude-mem@thedotmack": false,
+    "figma@claude-plugins-official": false,
+    "mattpocock-skills@claude-plugins-official": true,
+    "code-review@claude-plugins-official": false
+  },
+  "extraKnownMarketplaces": {
+    "thedotmack": {
+      "source": {
+        "source": "github",
+        "repo": "thedotmack/claude-mem"
+      }
+    }
+  },
+  "language": "English",
+  "sandbox": {
+    "network": {
+      "allowLocalBinding": true
+    }
+  },
+  "effortLevel": "medium",
+  "modelSettings": {
+    "claude-fable-5-1": {
+      "effortLevel": "high"
+    },
+    "claude-opus-5-5": {
+      "effortLevel": "medium"
+    }
+  },
+  "pluginConfigs": {
+    "cc-plugin-agents-md@builtin": {
+      "options": {
+        "instructionFiles": "claude-md-and-agents-md"
+      }
+    }
+  },
+  "editorMode": "vim",
+  "agentPushNotifEnabled": false,
+  "autoMode": {
+    "allow": [
+      "$defaults",
+      "Bash(glab mr view:*)",
+      "Bash(glab mr list:*)",
+      "Bash(lsof -i :*)"
+    ],
+    "soft_deny": [
+      "$defaults",
+      "Bash(glab mr merge:*)"
+    ]
+  }
+}

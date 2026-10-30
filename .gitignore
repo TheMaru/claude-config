@@ -1,0 +1,14 @@
+# Allowlist: everything under ~/.claude is session state, caches or credentials unless named here.
+*
+!.gitignore
+!README.md
+!CLAUDE.md
+!settings.json
+!statusline.sh
+!keybindings.json
+!output-styles/
+!output-styles/**
+!skills/
+!skills/**
+!hooks/
+!hooks/**
