@@ -12,3 +12,7 @@
 !skills/**
 !hooks/
 !hooks/**
+
+# Managed by claude.ai skill sync, not by this repo.
+skills/synced/
+skills/.trash/
