@@ -18,16 +18,53 @@ done <<< "$files" | sort)
 [ -z "$pairs" ] && exit 0
 
 out=$(mktemp "${TMPDIR:-/tmp}/lint-on-stop.XXXXXX") || exit 0
-trap 'rm -f "$out"' EXIT
+work=$(mktemp -d "${TMPDIR:-/tmp}/lint-on-stop-work.XXXXXX") || exit 0
+trap 'rm -rf "$out" "$work"' EXIT
+
+# Errors the HEAD version of a file already had are not this change's; matching goes by rule and
+# message, not by line, because an edit above an old error moves its line.
+new_errors() {
+  python3 -I - "$1" "$2" <<'PY'
+import json, sys
+from collections import Counter
+current, baseline_dir = sys.argv[1], sys.argv[2]
+lines = []
+for result in json.load(open(current)):
+    path = result['filePath']
+    base = Counter()
+    try:
+        for b in json.load(open(f"{baseline_dir}/{path.replace('/', '__')}.json")):
+            base.update((m.get('ruleId'), m['message']) for m in b['messages'])
+    except (FileNotFoundError, json.JSONDecodeError):
+        pass
+    for m in result['messages']:
+        key = (m.get('ruleId'), m['message'])
+        if base[key] > 0:
+            base[key] -= 1
+            continue
+        lines.append(f"{path}\n  {m.get('line', 0)}:{m.get('column', 0)}  error  {m['message']}  {m.get('ruleId') or ''}")
+print('\n'.join(lines))
+PY
+}
 
 printf '%s\n' "$pairs" | cut -f1 | uniq | while IFS= read -r d; do
   set --
   while IFS=$'\t' read -r pd rel; do
     [ "$pd" = "$d" ] && set -- "$@" "$rel"
   done <<< "$pairs"
-  res=$(cd "$d" && npx --no-install eslint --quiet "$@" 2>&1)
+  json="$work/current.json"
+  (cd "$d" && npx --no-install eslint --quiet -f json "$@" > "$json" 2>/dev/null)
   # Exit 2 is an ESLint crash or config error, not a finding; blocking on it would trap the turn.
-  [ $? -eq 1 ] && printf '== %s\n%s\n\n' "$d" "$res" >> "$out"
+  [ $? -eq 1 ] || continue
+  rm -rf "$work/base" && mkdir "$work/base"
+  jq -r '.[] | select(.errorCount > 0) | .filePath' "$json" | while IFS= read -r path; do
+    relpath=${path#"$root/$d/"}
+    git cat-file -e "HEAD:$d/$relpath" 2>/dev/null || continue
+    git show "HEAD:$d/$relpath" | (cd "$d" && npx --no-install eslint --quiet -f json \
+      --stdin --stdin-filename "$relpath" > "$work/base/$(printf '%s' "$path" | sed 's#/#__#g').json" 2>/dev/null)
+  done
+  res=$(new_errors "$json" "$work/base")
+  [ -n "$res" ] && printf '== %s\n%s\n\n' "$d" "$res" >> "$out"
 done
 
 state="$(git rev-parse --absolute-git-dir)/claude-lint-on-stop.sha"
@@ -43,5 +80,5 @@ printf '%s' "$sha" > "$state"
 
 jq -n --rawfile r "$out" '{
   decision: "block",
-  reason: ("ESLint errors in files changed since HEAD. Fix the ones this change caused; for errors that were already there, say so and leave them.\n\n" + $r)
+  reason: ("ESLint errors this change added (errors the HEAD version already had are left out). Fix them.\n\n" + $r)
 }'

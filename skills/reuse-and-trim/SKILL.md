@@ -20,6 +20,11 @@ The diff is the range the review used. Without one, the merge-base with the defa
    Read what you find — a near-match with the wrong shape stays a near-match.
 3. **Give every entry a verdict**: replaced by what, or kept for which reason. A verdict of kept
    names the property the existing code lacks.
+4. **Check the home of every shared export the diff adds, or whose consumer it removes.** Count
+   its consumers at the tip, by the boundary the repo's rules name (deployable, service, package).
+   Below two: verdict *moved home* into the one consumer, or *deleted* with none. The pass is done
+   when every such export has two consumers or a verdict — a helper whose second consumer left
+   gets the same verdict as one that never had it.
 
 A string literal an enum or constant already holds is an invention. So is a class string or a
 markup block that stands a second time.
@@ -38,4 +43,4 @@ whose why already stands in the ticket or the commit message.
 ## Close out
 
 Report both verdict tables. Apply what the user agrees to, then run the package's tests, type check
-and lint. Close with the counts: inventions replaced, comments deleted.
+and lint. Close with the counts: inventions replaced, exports moved home, comments deleted.

@@ -26,7 +26,9 @@ visible ones are the leaves of the flow, not the flow.
 summarize what it asks for in my words, hold it up with an illustration — ASCII mockup, state
 table, before/after — and wait for my go-ahead. In `/implement-spec`, do this once up front: one
 summary of all tickets with their open decisions, then wait for my go-ahead before any implementer
-starts. And after `/code-review`, run `/reuse-and-trim`, both passes.
+starts. And after `/code-review`, run `/reuse-and-trim`, both passes. A ticket closes with its
+checkboxes ticked and the suite counts of its last run in its last line, so a later MR description
+reads them instead of running the suites again.
 
 You can invoke: tdd, code-review, prototype, research, domain-modeling, codebase-design,
 diagnosing-bugs, grilling, resolving-merge-conflicts, reuse-and-trim.
